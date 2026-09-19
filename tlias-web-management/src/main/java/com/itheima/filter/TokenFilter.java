@@ -8,12 +8,17 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
 @Slf4j
 @WebFilter(urlPatterns = "/*")
 public class TokenFilter implements Filter {
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
@@ -40,7 +45,7 @@ public class TokenFilter implements Filter {
 
         //5. 解析token , 解析失败, 记录日志, 响应401 状态码
         try {
-            Claims claims = JwtUtils.parseJWT(token);
+            Claims claims = jwtUtils.parseJWT(token);
             log.info("解析到用户信息: {}", claims);
             Integer id = (Integer) claims.get("id");
             log.info("当前用户id: {}", id);

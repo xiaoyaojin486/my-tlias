@@ -28,6 +28,8 @@ public class EmpServiceImpl implements EmpService {
     private EmpMapper empMapper;
     @Autowired
     private EmpExprMapper empExprMapper;
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Override
     public PageResult<Emp> page(EmpQueryParam empQueryParam) {
@@ -141,7 +143,7 @@ public class EmpServiceImpl implements EmpService {
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("id", e.getId());
             dataMap.put("username", e.getUsername());
-            String jwt = JwtUtils.generateJwt(dataMap);//生成jwt令牌 - 存储id,username
+            String jwt = jwtUtils.generateJwt(dataMap);//生成jwt令牌 - 存储id,username
 
             return new LoginInfo(e.getId(), e.getUsername(), e.getName(), jwt);
         }

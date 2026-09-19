@@ -17,6 +17,14 @@ spring:
       max-file-size: 10MB #单个文件最大大小限制10MB
       max-request-size: 100MB #单个请求最大大小限制100MB
 
+#JWT配置
+tlias:
+  jwt:
+    #签名密钥(Base64编码), 从 .env 读取, 模板见仓库根目录 .env.example
+    #要求解码后 >= 256 bit(32字节), 否则应用启动时会直接失败
+    sign-key: ${JWT_SIGN_KEY}
+    expire: ${JWT_EXPIRE:43200000} #令牌有效期(毫秒), 默认12小时
+
 #配置mybatis的日志输出到控制台
 mybatis:
   configuration:

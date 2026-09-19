@@ -4,12 +4,17 @@ import com.itheima.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //1. 获取请求路径
@@ -33,7 +38,7 @@ public class TokenInterceptor implements HandlerInterceptor {
 
         //5. 解析token , 解析失败, 记录日志, 响应401 状态码
         try {
-            JwtUtils.parseJWT(token);
+            jwtUtils.parseJWT(token);
         } catch (Exception e){
             log.info("token解析失败, 令牌非法");
             response.setStatus(401); //设置响应状态码
