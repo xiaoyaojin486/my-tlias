@@ -26,8 +26,8 @@ public interface EmpMapper {
      * 主键返回 --> 获取到插入这条数据的主键.
      */
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    @Insert("insert into emp(username, name, gender, image, job, entry_date, phone, salary, dept_id, create_time, update_time) " +
-            "values (#{username}, #{name}, #{gender}, #{image}, #{job}, #{entryDate}, #{phone}, #{salary}, #{deptId}, #{createTime}, #{updateTime})")
+    @Insert("insert into emp(username, password, name, gender, image, job, entry_date, phone, salary, dept_id, create_time, update_time) " +
+            "values (#{username}, #{password}, #{name}, #{gender}, #{image}, #{job}, #{entryDate}, #{phone}, #{salary}, #{deptId}, #{createTime}, #{updateTime})")
     void insert(Emp emp);
 
     /**
@@ -70,8 +70,13 @@ public interface EmpMapper {
     List<String> listFiles();
 
     /**
-     * 根据用户名和密码查询员工信息
+     * 根据用户名查询员工信息(用于登录)
+     * <p>
+     * 注意: 不能再写成 "where username = ? and password = ?"。
+     * BCrypt 每次加密都会生成新的随机盐, 同一个密码两次加密得到的密文完全不同,
+     * 所以密码无法作为 SQL 查询条件, 只能先按用户名把密文取出来, 再在 Java 里用
+     * PasswordEncoder.matches(明文, 密文) 比对。
      */
-    @Select("select * from emp where username = #{username} and password = #{password}")
-    Emp getByUsernameAndPassword(Emp emp);
+    @Select("select * from emp where username = #{username}")
+    Emp getByUsername(String username);
 }

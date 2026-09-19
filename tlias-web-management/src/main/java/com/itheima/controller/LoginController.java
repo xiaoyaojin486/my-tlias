@@ -22,7 +22,8 @@ public class LoginController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody Emp emp){
-        log.info("员工登录:{}",emp);
+        //只记录用户名: 绝对不能把整个 emp 打进日志, 否则每次登录都会把明文密码写进日志文件
+        log.info("员工登录:{}", emp.getUsername());
         LoginInfo loginInfo = empService.login(emp);
         if (loginInfo != null){
             return Result.success(loginInfo);
