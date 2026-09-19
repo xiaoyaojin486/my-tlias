@@ -1,0 +1,124 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.EmpMapper">
+    <!--更新员工信息
+        <set> : 替换set关键字; 会自动去除掉更新字段后多余的 逗号(,)
+    -->
+    <update id="update">
+        update emp
+        <set>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="image != null and image != ''">image = #{image},</if>
+            <if test="job != null">job = #{job},</if>
+            <if test="entryDate != null">entry_date = #{entryDate},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="salary != null">salary = #{salary},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="updateTime != null">update_time = #{updateTime}</if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <!--批量删除员工-->
+    <delete id="deleteByIds">
+        delete from emp where id in
+        <foreach collection="ids" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--
+    注意事项:
+        #{...} 占位符, 不能出现在引号之内 - concat('%',#{name},'%')
+    动态SQL:
+        <if test=""> : 条件判断; test属性指定条件表达式, 如果条件表达式的值为true, 则拼接里面的SQL片段; 如果为false,则不拼接;
+        <where>:
+            - 如果where关键字后面有成立的条件, 则会生成where关键字; 如果where关键字后面没有成立的条件, 则会删除where关键字;
+            - 会自动去除第一个条件前多余的and/or
+    -->
+    <select id="list" resultType="com.itheima.pojo.Emp">
+        select emp.*, dept.name as dept_name
+        from emp
+        left join dept on emp.dept_id = dept.id
+        <where>
+            <if test="name != null and name != ''">
+                emp.name like concat('%',#{name},'%')
+            </if>
+            <if test="gender != null">
+               and emp.gender = #{gender}
+            </if>
+            <if test="begin != null and end != null">
+                and emp.entry_date between #{begin} and #{end}
+            </if>
+        </where>
+        order by emp.update_time desc
+    </select>
+
+    <!--自定义ResultMap-->
+    <resultMap id="empMap" type="com.itheima.pojo.Emp">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender"/>
+        <result column="image" property="image"/>
+        <result column="job" property="job"/>
+        <result column="entry_date" property="entryDate"/>
+        <result column="phone" property="phone"/>
+        <result column="salary" property="salary"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+
+        <collection property="exprList" ofType="com.itheima.pojo.EmpExpr">
+            <id column="ee_id" property="id"/>
+            <result column="ee_emp_id" property="empId"/>
+            <result column="ee_begin" property="begin"/>
+            <result column="ee_end" property="end"/>
+            <result column="ee_company" property="company"/>
+            <result column="ee_job" property="job"/>
+        </collection>
+    </resultMap>
+
+    <!--根据ID查询员工的详细信息
+       resultType: 返回的结果集类型, 主要用来封装一些简单的类型的数据;
+       resultMap: 返回的结果集类型, 主要用来封装一些复杂的类型数据, 例如: 嵌套结果集, 嵌套查询,
+    -->
+    <select id="getById" resultMap="empMap">
+        select e.*,
+               ee.id ee_id,
+               ee.emp_id ee_emp_id,
+               ee.begin ee_begin,
+               ee.end ee_end,
+               ee.company ee_company,
+               ee.job ee_job
+        from emp e left join emp_expr ee on e.id = ee.emp_id where e.id = #{id}
+    </select>
+
+    <!--统计员工的职位人数-->
+    <select id="getEmpJobData" resultType="java.util.Map">
+        select (case
+                    when job = 1 then '班主任'
+                    when job = 2 then '讲师'
+                    when job = 3 then '学工主管'
+                    when job = 4 then '教研主管'
+                    when job = 5 then '咨询师'
+                    else '其他'
+            end) as pos,
+               count(*) num from emp
+        group by job
+        order by num
+    </select>
+
+    <!--统计性别人数-->
+    <select id="getEmpGenderData" resultType="java.util.Map">
+        select
+            if(gender = 1, '男性员工', '女性员工') as name,
+            count(*) as value
+        from emp group by gender
+    </select>
+
+</mapper>
